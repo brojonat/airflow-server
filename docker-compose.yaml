@@ -64,12 +64,10 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
-    # If CORS isn't working try this:
+    # If we're having CORS issues, try enabling these:
     # AIRFLOW__API__ACCESS_CONTROL_ALLOW_HEADERS: 'origin, content-type, accept'
     # AIRFLOW__API__ACCESS_CONTROL_ALLOW_METHODS: 'POST, GET, OPTIONS, DELETE'
     # AIRFLOW__API__ACCESS_CONTROL_ALLOW_ORIGIN: 'localhost bayesian.brojonat.com'
-    # if that doesn't work, then try building your own image with an updated airflow.cfg
-    #
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
     # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
