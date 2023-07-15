@@ -53,6 +53,7 @@ x-airflow-common:
   image: ${AIRFLOW_IMAGE_NAME:-brojonat/airflow:1.0.0}
   dns:
     - 100.100.100.100
+    - 8.8.8.8
   # build: .
   environment:
     &airflow-common-env
