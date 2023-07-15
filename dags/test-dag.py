@@ -17,7 +17,7 @@
 # under the License.
 from __future__ import annotations
 
-import os
+import json
 import time
 import logging
 
@@ -96,7 +96,7 @@ def monitor_reddit_submission():
         comment_data = {}
         for c in sub.comments.list():
             comment_data[c.id] = {"ups": c.ups, "downs": c.downs, "body": c.body}
-        return {sid: comment_data}
+        return json.dumps({sid: comment_data})
     poll_task_res = poll_task()
 
     # publish data to channel
