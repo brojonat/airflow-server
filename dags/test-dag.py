@@ -30,7 +30,6 @@ from airflow.api.common.trigger_dag import trigger_dag
 from airflow.models import DagRun
 from airflow.models.baseoperator import chain
 from airflow.models.param import Param
-import praw
 
 from plugins.operators import (
     RedisPublishOperator,
@@ -93,9 +92,10 @@ def monitor_reddit_submission():
         logger.info("Polling reddit for %s", sid)
         rc = PRAWHook(reddit_conn_id="airflow_reddit").get_conn()
         sub = rc.submission(sid)
+        sub.comments.replace_more(limit=0)
         comment_data = {}
-        for c in sub.comments:
-            comment_data[c.id] = True
+        for c in sub.comments.list():
+            comment_data[c.id] = {"ups": c.ups, "downs": c.downs, "body": c.body}
         return {sid: comment_data}
     poll_task_res = poll_task()
 

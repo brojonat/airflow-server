@@ -39,7 +39,6 @@ class PRAWHook(BaseHook):
 
     def get_conn(self) -> Any:
         conn = self.get_connection(self.reddit_conn_id)
-        self.log.info(conn.extra_dejson)
         rc = praw.Reddit(
             client_id=conn.extra_dejson.get("CLIENT_ID"),
             client_secret=conn.extra_dejson.get("CLIENT_SECRET"),
