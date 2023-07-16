@@ -82,7 +82,7 @@ def monitor_reddit_submission():
         logger.info("Lock value data: %s", lock_value)
         if not lock_value:
             return None
-        return ["poll_task"]
+        return ["poll_pub_task"]
     lock_branch_res = lock_branch()
 
     # poll for data
