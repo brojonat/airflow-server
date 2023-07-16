@@ -95,8 +95,13 @@ def monitor_reddit_submission():
         sub = rc.submission(sid)
         sub.comments.replace_more(limit=0)
         comment_data = {}
+        fields = [
+            "score",
+            "body",
+            "permalink",
+        ]
         for c in sub.comments.list():
-            comment_data[c.id] = {"ups": c.ups, "downs": c.downs, "body": c.body}
+            comment_data[c.id] = {f: getattr(c, f) for f in fields}
         data = json.dumps({sid: comment_data})
         rdb = RedisHookDecodeResponses(redis_conn_id="airflow_redis").get_conn()
         return rdb.publish(sid, data)
