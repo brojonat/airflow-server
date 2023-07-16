@@ -37,6 +37,7 @@ from plugins.operators import (
 )
 from plugins.hooks import (
     PRAWHook,
+    RedisHookDecodeResponses,
 )
 
 @dag(
@@ -85,8 +86,8 @@ def monitor_reddit_submission():
     lock_branch_res = lock_branch()
 
     # poll for data
-    @task(task_id="poll_task")
-    def poll_task(**context):
+    @task(task_id="poll_pub_task")
+    def poll_pub_task(**context):
         """Poll Reddit for submission_id data and return the result."""
         sid = context["params"]["submission_id"]
         logger.info("Polling reddit for %s", sid)
@@ -96,16 +97,10 @@ def monitor_reddit_submission():
         comment_data = {}
         for c in sub.comments.list():
             comment_data[c.id] = {"ups": c.ups, "downs": c.downs, "body": c.body}
-        return json.dumps({sid: comment_data})
-    poll_task_res = poll_task()
-
-    # publish data to channel
-    publish_task_res = RedisPublishOperator(
-        task_id="publish_task",
-        redis_conn_id="airflow_redis",
-        channel="{{ params['submission_id'] }}",
-        message="{{ ti.xcom_pull(task_ids='poll_task') }}",
-    )
+        data = json.dumps({sid: comment_data})
+        rdb = RedisHookDecodeResponses(redis_conn_id="airflow_redis").get_conn()
+        return rdb.publish(sid, data)
+    poll_pub_task_res = poll_pub_task()
 
     # retrigger self
     @task(task_id="trigger_self")
@@ -123,29 +118,26 @@ def monitor_reddit_submission():
 
     # exit early if no subscribers
     @task.branch(task_id="sub_count_branch")
-    def sub_count_branch(**context):
+    def sub_count_branch(sub_count, **context):
         """Exit or rerun depending on PUBLISH result."""
-        sub_count = context["task_instance"].xcom_pull(task_ids="publish_task")
         logger.info("Pub count data: %s", sub_count)
         if sub_count < 1:
             return ["release_lock_task"]
         return ["sleep"]
-    sub_count_branch_res = sub_count_branch()
+    sub_count_branch_res = sub_count_branch(poll_pub_task_res)
 
     # sleep to prevent spamming
     @task(task_id="sleep")
     def sleep():
         """Sleep."""
         time.sleep(3)
-        return
     sleep_res = sleep()
 
     # main DAG dependency structure; all tasks are sequentially dependent
     chain(
         acquire_lock_res,
         lock_branch_res,
-        poll_task_res,
-        publish_task_res,
+        poll_pub_task_res,
         sub_count_branch_res,
         sleep_res,
         release_lock_res,
