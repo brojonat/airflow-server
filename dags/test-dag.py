@@ -95,13 +95,83 @@ def monitor_reddit_submission():
         sub = rc.submission(sid)
         sub.comments.replace_more(limit=0)
         comment_data = {}
-        fields = [
-            "score",
-            "body",
-            "permalink",
-        ]
+        def author_to_dict(a):
+            return {
+                "comment_karma": a.comment_karma,
+                "created_utc": a.created_utc,
+                "has_verified_email": a.has_verified_email,
+                "id": a.id,
+                "is_employee": a.is_employee,
+                "link_karma": a.link_karma,
+                "name": a.name,
+            }
+
+        def submission_to_dict(s):
+            return {
+                "author": author_to_dict(s.author),
+                "created_utc": s.created_utc,
+                "distinguished": s.distinguished,
+                "edited": s.edited,
+                "id": s.id,
+                "is_self": s.is_self,
+                "locked": s.locked,
+                "name": s.name,
+                "num_comments": s.num_comments,
+                "over_18": s.over_18,
+                "permalink": s.permalink,
+                "poll_data": poll_data_to_dict(s.poll_data),
+                "score": s.score,
+                "selftext": s.selftext,
+                "title": s.title,
+                "upvote_ration": s.upvote_ratio,
+            }
+
+        def poll_data_to_dict(p):
+            return {
+                "options": poll_options_to_dict(p.options),
+                "total_vote_count": p.total_vote_count,
+                "voting_end_timestamp": p.voting_end_timestamp,
+            }
+
+        def poll_options_to_dict(o):
+            return {
+                "id": o.id,
+                "text": o.text,
+                "vote_count": o.vote_count,
+            }
+
+        def subreddit_to_dict(s):
+             return {
+                "created_utc": s.created_utc,
+                "description": s.description,
+                "display_name": s.display_name,
+                "id": s.id,
+                "name": s.name,
+                "over18": s.over18, # lol, doesn't match the submission convention
+                "subscribers": s.subscribers,
+             }
+
+        def comment_to_dict(c):
+            data = {}
+            data["author"] = author_to_dict(c.author)
+            data["body"] = c.body
+            data["created_utc"] = c.created_utc
+            data["distinguished"] = c.distinguished
+            data["edited"] = c.edited
+            data["id"] = c.id
+            data["is_submitter"] = c.is_submitter
+            data["link_id"] = c.link_id
+            data["parent_id"] = c.parent_id
+            data["permalink"] = c.permalink
+            data["score"] = c.score
+            data["stickied"] = c.stickied
+            data["submission"] = submission_to_dict(c.submission)
+            data["subreddit"] = subreddit_to_dict(c.subreddit)
+            data["replies"] = [] # skip this since it requires more network requests
+            return data
+
         for c in sub.comments.list():
-            comment_data[c.id] = {f: getattr(c, f) for f in fields}
+            comment_data[c.id] = comment_to_dict(c)
         data = json.dumps({sid: comment_data})
         rdb = RedisHookDecodeResponses(redis_conn_id="airflow_redis").get_conn()
         return rdb.publish(sid, data)
