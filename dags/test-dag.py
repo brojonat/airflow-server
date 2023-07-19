@@ -107,6 +107,10 @@ def monitor_reddit_submission():
             }
 
         def submission_to_dict(s):
+            try:
+                poll_data = poll_data_to_dict(s.poll_data)
+            except AttributeError:
+                poll_data = None
             return {
                 "author": author_to_dict(s.author),
                 "created_utc": s.created_utc,
@@ -119,7 +123,7 @@ def monitor_reddit_submission():
                 "num_comments": s.num_comments,
                 "over_18": s.over_18,
                 "permalink": s.permalink,
-                "poll_data": poll_data_to_dict(s.poll_data),
+                "poll_data": poll_data,
                 "score": s.score,
                 "selftext": s.selftext,
                 "title": s.title,
