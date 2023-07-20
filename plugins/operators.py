@@ -119,7 +119,7 @@ class RedisLockOperator(BaseOperator):
                 "Lock release success: %s released lock %s", self.lock_value, self.lock_key)
             return rdb.delete(self.lock_key)
 
-        rdb.set(self.lock_key, self.lock_value, nx=True)
+        rdb.set(self.lock_key, self.lock_value, nx=True, ex=120)
         result = rdb.get(self.lock_key)
         if result != self.lock_value:
             self.log.info("%s holds lock instead of %s, returning None", result, self.lock_value)
