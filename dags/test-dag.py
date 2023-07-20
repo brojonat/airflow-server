@@ -156,7 +156,7 @@ def monitor_reddit_submission():
 
         def comment_to_dict(c):
             data = {}
-            data["author_id"] = getattr(c.author, "id", None) if c.author else None
+            # data["author_id"] = getattr(c.author, "id", None) if c.author else None
             data["body"] = getattr(c, "body", None)
             data["created_utc"] = getattr(c, "created_utc", None)
             data["distinguished"] = getattr(c, "distinguished", None)
@@ -168,8 +168,8 @@ def monitor_reddit_submission():
             data["permalink"] = getattr(c, "permalink", None)
             data["score"] = getattr(c, "score", None)
             data["stickied"] = getattr(c, "stickied", None)
-            data["submission_id"] = getattr(c.submission, "id", None) if c.submission else None
-            data["subreddit"] = getattr(c.subreddit, "id", None) if c.subreddit else None
+            # data["submission_id"] = getattr(c.submission, "id", None) if c.submission else None
+            # data["subreddit"] = getattr(c.subreddit, "id", None) if c.subreddit else None
             data["replies"] = [] # skip this since it requires more network requests
             return data
 
