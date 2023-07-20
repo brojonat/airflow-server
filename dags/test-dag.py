@@ -179,11 +179,23 @@ def monitor_reddit_submission():
         subreddit_data = {}
         for c in sub.comments.list():
             comment_data[c.id] = comment_to_dict(c)
-            if c.author and c.author.id not in author_data:
+            if (
+                c.author and
+                getattr(c.author, "id", None) and
+                c.author.id not in author_data
+            ):
                 author_data[c.author.id] = author_to_dict(c.author)
-            if c.submission and c.submission.id not in submission_data:
+            if (
+                c.submission and
+                getattr(c.submission, "id", None) and
+                c.submission.id not in submission_data
+            ):
                 submission_data[c.submission.id] = submission_to_dict(c.submission)
-            if c.subreddit and c.subreddit.id not in subreddit_data:
+            if (
+                c.subreddit and
+                getattr(c.subreddit, "id", None) and
+                c.subreddit.id not in subreddit_data
+            ):
                 subreddit_data[c.subreddit.id] = subreddit_to_dict(c.subreddit)
         data = json.dumps({
             sid: {
