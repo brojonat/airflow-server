@@ -94,7 +94,6 @@ def monitor_reddit_submission():
         rc = PRAWHook(reddit_conn_id="airflow_reddit").get_conn()
         sub = rc.submission(sid)
         sub.comments.replace_more(limit=0)
-        comment_data = {}
         def author_to_dict(a):
             return {
                 "comment_karma": a.comment_karma,
@@ -157,7 +156,7 @@ def monitor_reddit_submission():
 
         def comment_to_dict(c):
             data = {}
-            data["author"] = author_to_dict(c.author)
+            data["author_id"] = c.author.id
             data["body"] = c.body
             data["created_utc"] = c.created_utc
             data["distinguished"] = c.distinguished
@@ -169,14 +168,31 @@ def monitor_reddit_submission():
             data["permalink"] = c.permalink
             data["score"] = c.score
             data["stickied"] = c.stickied
-            data["submission"] = submission_to_dict(c.submission)
-            data["subreddit"] = subreddit_to_dict(c.subreddit)
+            data["submission_id"] = c.submission.id
+            data["subreddit"] = c.subreddit.id
             data["replies"] = [] # skip this since it requires more network requests
             return data
 
+        comment_data = {}
+        author_data = {}
+        submission_data = {}
+        subreddit_data = {}
         for c in sub.comments.list():
             comment_data[c.id] = comment_to_dict(c)
-        data = json.dumps({sid: comment_data})
+            if comment_data["author_id"] not in author_data:
+                author_data[c.author.id] = author_to_dict(c.author)
+            if comment_data["submission_id"] not in submission_data:
+                submission_data[c.submission.id] = submission_to_dict(c.submission)
+            if comment_data["subreddit_id"] not in subreddit_data:
+                subreddit_data[c.subreddit.id] = subreddit_to_dict(c.subreddit)
+        data = json.dumps({
+            sid: {
+                "comment_data": comment_data,
+                "author_data": author_data,
+                "submission_data": submission_data,
+                "subreddit_data": subreddit_data
+            }
+        })
         rdb = RedisHookDecodeResponses(redis_conn_id="airflow_redis").get_conn()
         return rdb.publish(sid, data)
     poll_pub_task_res = poll_pub_task()
