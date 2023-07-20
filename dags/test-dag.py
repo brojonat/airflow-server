@@ -177,7 +177,22 @@ def monitor_reddit_submission():
         author_data = {}
         submission_data = {}
         subreddit_data = {}
-        for c in sub.comments.list():
+
+        comments = sub.comments.list()
+        if (
+            comments[0].submission and
+            getattr(comments[0].submission, "id", None) and
+            comments[0].submission.id not in submission_data
+        ):
+            submission_data[comments[0].submission.id] = submission_to_dict(comments[0].submission)
+        if (
+            comments[0].subreddit and
+            getattr(comments[0].subreddit, "id", None) and
+            comments[0].subreddit.id not in subreddit_data
+        ):
+            subreddit_data[comments[0].subreddit.id] = subreddit_to_dict(comments[0].subreddit)
+
+        for c in comments:
             comment_data[c.id] = comment_to_dict(c)
             # if (
             #     c.author and
@@ -185,18 +200,7 @@ def monitor_reddit_submission():
             #     c.author.id not in author_data
             # ):
             #     author_data[c.author.id] = author_to_dict(c.author)
-            if (
-                c.submission and
-                getattr(c.submission, "id", None) and
-                c.submission.id not in submission_data
-            ):
-                submission_data[c.submission.id] = submission_to_dict(c.submission)
-            if (
-                c.subreddit and
-                getattr(c.subreddit, "id", None) and
-                c.subreddit.id not in subreddit_data
-            ):
-                subreddit_data[c.subreddit.id] = subreddit_to_dict(c.subreddit)
+
         data = json.dumps({
             sid: {
                 "comment_data": comment_data,
