@@ -96,13 +96,13 @@ def monitor_reddit_submission():
         sub.comments.replace_more(limit=0)
         def author_to_dict(a):
             return {
-                "comment_karma": a.comment_karma,
-                "created_utc": a.created_utc,
-                "has_verified_email": a.has_verified_email,
-                "id": a.id,
-                "is_employee": a.is_employee,
-                "link_karma": a.link_karma,
-                "name": a.name,
+                "comment_karma": getattr(a, "comment_karma", None),
+                "created_utc": getattr(a, "created_utc", None),
+                "has_verified_email": getattr(a, "has_verified_email", None),
+                "id": getattr(a, "id", None),
+                "is_employee": getattr(a, "is_employee", None),
+                "link_karma": getattr(a, "link_karma", None),
+                "name": getattr(a, "name", None),
             }
 
         def submission_to_dict(s):
@@ -112,62 +112,62 @@ def monitor_reddit_submission():
                 poll_data = None
             return {
                 "author": author_to_dict(s.author),
-                "created_utc": s.created_utc,
-                "distinguished": s.distinguished,
-                "edited": s.edited,
-                "id": s.id,
-                "is_self": s.is_self,
-                "locked": s.locked,
-                "name": s.name,
-                "num_comments": s.num_comments,
-                "over_18": s.over_18,
-                "permalink": s.permalink,
+                "created_utc": getattr(s, "created_utc", None),
+                "distinguished": getattr(s, "distinguished", None),
+                "edited": getattr(s, "edited", None),
+                "id": getattr(s, "id", None),
+                "is_self": getattr(s, "is_self", None),
+                "locked": getattr(s, "locked", None),
+                "name": getattr(s, "name", None),
+                "num_comments": getattr(s, "num_comments", None),
+                "over_18": getattr(s, "over_18", None),
+                "permalink": getattr(s, "permalink", None),
                 "poll_data": poll_data,
-                "score": s.score,
-                "selftext": s.selftext,
-                "title": s.title,
-                "upvote_ration": s.upvote_ratio,
+                "score": getattr(s, "score", None),
+                "selftext": getattr(s, "selftext", None),
+                "title": getattr(s, "title", None),
+                "upvote_ration": getattr(s, "upvote_ratio", None),
             }
 
         def poll_data_to_dict(p):
             return {
                 "options": poll_options_to_dict(p.options),
-                "total_vote_count": p.total_vote_count,
-                "voting_end_timestamp": p.voting_end_timestamp,
+                "total_vote_count": getattr(p, "total_vote_count", None),
+                "voting_end_timestamp": getattr(p, "voting_end_timestamp", None),
             }
 
         def poll_options_to_dict(o):
             return {
-                "id": o.id,
-                "text": o.text,
-                "vote_count": o.vote_count,
+                "id": getattr(o, "id", None),
+                "text": getattr(o, "text", None),
+                "vote_count": getattr(o, "vote_count", None),
             }
 
         def subreddit_to_dict(s):
              return {
-                "created_utc": s.created_utc,
-                "description": s.description,
-                "display_name": s.display_name,
-                "id": s.id,
-                "name": s.name,
-                "over18": s.over18, # lol, doesn't match the submission convention
-                "subscribers": s.subscribers,
+                "created_utc": getattr(s, "created_utc", None),
+                "description": getattr(s, "description", None),
+                "display_name": getattr(s, "display_name", None),
+                "id": getattr(s, "id", None),
+                "name": getattr(s, "name", None),
+                "over18": getattr(s, "over18", None), # lol, doesn't match the submission convention
+                "subscribers": getattr(s, "subscribers", None),
              }
 
         def comment_to_dict(c):
             data = {}
             data["author_id"] = c.author.id if c.author else None
-            data["body"] = c.body
-            data["created_utc"] = c.created_utc
-            data["distinguished"] = c.distinguished
-            data["edited"] = c.edited
-            data["id"] = c.id
-            data["is_submitter"] = c.is_submitter
-            data["link_id"] = c.link_id
-            data["parent_id"] = c.parent_id
-            data["permalink"] = c.permalink
-            data["score"] = c.score
-            data["stickied"] = c.stickied
+            data["body"] = getattr(c, "body", None)
+            data["created_utc"] = getattr(c, "created_utc", None)
+            data["distinguished"] = getattr(c, "distinguished", None)
+            data["edited"] = getattr(c, "edited", None)
+            data["id"] = getattr(c, "id", None)
+            data["is_submitter"] = getattr(c, "is_submitter", None)
+            data["link_id"] = getattr(c, "link_id", None)
+            data["parent_id"] = getattr(c, "parent_id", None)
+            data["permalink"] = getattr(c, "permalink", None)
+            data["score"] = getattr(c, "score", None)
+            data["stickied"] = getattr(c, "stickied", None)
             data["submission_id"] = c.submission.id if c.submission else None
             data["subreddit"] = c.subreddit.id if c.subreddit else None
             data["replies"] = [] # skip this since it requires more network requests
