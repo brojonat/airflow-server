@@ -179,12 +179,12 @@ def monitor_reddit_submission():
         subreddit_data = {}
         for c in sub.comments.list():
             comment_data[c.id] = comment_to_dict(c)
-            if (
-                c.author and
-                getattr(c.author, "id", None) and
-                c.author.id not in author_data
-            ):
-                author_data[c.author.id] = author_to_dict(c.author)
+            # if (
+            #     c.author and
+            #     getattr(c.author, "id", None) and
+            #     c.author.id not in author_data
+            # ):
+            #     author_data[c.author.id] = author_to_dict(c.author)
             if (
                 c.submission and
                 getattr(c.submission, "id", None) and
