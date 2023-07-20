@@ -156,7 +156,7 @@ def monitor_reddit_submission():
 
         def comment_to_dict(c):
             data = {}
-            data["author_id"] = c.author.id
+            data["author_id"] = c.author.id if c.author else None
             data["body"] = c.body
             data["created_utc"] = c.created_utc
             data["distinguished"] = c.distinguished
@@ -168,8 +168,8 @@ def monitor_reddit_submission():
             data["permalink"] = c.permalink
             data["score"] = c.score
             data["stickied"] = c.stickied
-            data["submission_id"] = c.submission.id
-            data["subreddit"] = c.subreddit.id
+            data["submission_id"] = c.submission.id if c.submission else None
+            data["subreddit"] = c.subreddit.id if c.subreddit else None
             data["replies"] = [] # skip this since it requires more network requests
             return data
 
