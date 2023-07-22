@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import time
 import logging
+import datetime
 
 import pendulum
 from airflow.decorators import dag, task
@@ -32,7 +33,6 @@ from airflow.models.baseoperator import chain
 from airflow.models.param import Param
 
 from plugins.operators import (
-    RedisPublishOperator,
     RedisLockOperator,
 )
 from plugins.hooks import (
@@ -55,6 +55,9 @@ def monitor_reddit_submission():
 
     """
     logger = logging.getLogger("airflow.task")
+    start_time = pendulum.now()
+    max_rps = 0.5 # requests per second. 0.5 is high, but fine while testing
+    soonest_next_poll = start_time + datetime.timedelta(seconds=1./max_rps)
 
     # acquire the lock to poll for this submission_id
     acquire_lock_res = RedisLockOperator(
@@ -194,6 +197,7 @@ def monitor_reddit_submission():
 
         for c in comments:
             comment_data[c.id] = comment_to_dict(c)
+            # don't do this as it creates a ton of network requests
             # if (
             #     c.author and
             #     getattr(c.author, "id", None) and
@@ -241,7 +245,9 @@ def monitor_reddit_submission():
     @task(task_id="sleep")
     def sleep():
         """Sleep."""
-        time.sleep(3)
+        sleep_time = (pendulum.now() - soonest_next_poll).seconds
+        if sleep_time > 0:
+            time.sleep(sleep_time)
     sleep_res = sleep()
 
     # main DAG dependency structure; all tasks are sequentially dependent
